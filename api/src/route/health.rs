@@ -1,7 +1,7 @@
 use axum::{routing::get, Router};
 use registry::AppRegistry;
 
-use crate::handler::health::{health_check(), health_check_db};
+use crate::handler::health::{health_check, health_check_db};
 
 //RouterのStateがAppRegistyとなるため、Routerの型引数に指定する
 pub fn build_health_check_routers() -> Router<AppRegistry> {

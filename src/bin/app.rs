@@ -8,7 +8,6 @@ use registry::AppRegistry;
 use shared::config::AppConfig;
 use tokio::net::TcpListener;
 
-
 #[tokio::main]
 async fn main() -> Result<()> {
     bootstrap().await
@@ -33,7 +32,19 @@ async fn bootstrap() -> Result<()> {
     let addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), 8080);
     let listener = TcpListener::bind(&addr).await?;
 
-    println!("Listener on {}",  addr);
+    println!("Listener on {}", addr);
 
     axum::serve(listener, app).await.map_err(Error::from)
+}
+
+#[tokio::test]
+async fn health_check_works() {
+    let status_code = health_check().await;
+    assert_eq!(status_code, StatusCode::OK);
+}
+
+#[sqlx::test]
+async fn health_check_db_works(pool: sqlx::PgPool) {
+    let status_code = health_check_db(State(pool)).await;
+    assert_eq!(status_code, StatusCode::OK);
 }
