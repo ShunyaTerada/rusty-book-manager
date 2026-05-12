@@ -6,3 +6,6 @@ edition = "2024"
 [dependencies]
 registry.workspace = true
 axum.workspace = true
+tokio.workspace = true
+sqlx.workspace = true
+adapter.workspace = true

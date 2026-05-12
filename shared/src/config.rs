@@ -4,7 +4,7 @@ pub struct AppConfig {
     pub database: DatabaseConfig,
 }
 
-impl AppConfig{
+impl AppConfig {
     //データベース接続に必要な情報を環境変数から取り出すように修正する。
     pub fn new() -> Result<Self> {
         let database = DatabaseConfig {
@@ -17,7 +17,6 @@ impl AppConfig{
         Ok(Self { database })
     }
 }
-
 
 pub struct DatabaseConfig {
     pub host: String,

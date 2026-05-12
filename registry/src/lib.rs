@@ -10,7 +10,7 @@ pub struct AppRegistry {
 }
 
 impl AppRegistry {
-    pub fn new (pool: ConnectionPool) -> Self {
+    pub fn new(pool: ConnectionPool) -> Self {
         //依存解決を行う。関数内で手書きする。
         let health_check_repository = Arc::new(HealthCheckRepositoryImpl::new(pool.clone()));
         Self {
@@ -23,4 +23,3 @@ impl AppRegistry {
         self.health_check_repository.clone()
     }
 }
-

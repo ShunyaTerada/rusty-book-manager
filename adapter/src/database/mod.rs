@@ -1,5 +1,5 @@
 use shared::config::DatabaseConfig;
-use sqlx::{postgres::PgConnectOptions, PgPool};
+use sqlx::{PgPool, postgres::PgConnectOptions};
 
 fn make_pg_connect_options(cfg: &DatabaseConfig) -> PgConnectOptions {
     PgConnectOptions::new()
@@ -18,10 +18,13 @@ impl ConnectionPool {
     pub fn inner_ref(&self) -> &PgPool {
         &self.0
     }
+
+    pub fn new(pool: sqlx::PgPool) -> Self {
+        Self(pool)
+    }
 }
 
 //返り値をConnectionPoolに変更し、内部実装もそれに合わせて修正した。
 pub fn connect_database_with(cfg: &DatabaseConfig) -> ConnectionPool {
     ConnectionPool(PgPool::connect_lazy_with(make_pg_connect_options(cfg)))
 }
-

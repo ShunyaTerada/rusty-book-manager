@@ -36,15 +36,3 @@ async fn bootstrap() -> Result<()> {
 
     axum::serve(listener, app).await.map_err(Error::from)
 }
-
-#[tokio::test]
-async fn health_check_works() {
-    let status_code = health_check().await;
-    assert_eq!(status_code, StatusCode::OK);
-}
-
-#[sqlx::test]
-async fn health_check_db_works(pool: sqlx::PgPool) {
-    let status_code = health_check_db(State(pool)).await;
-    assert_eq!(status_code, StatusCode::OK);
-}
