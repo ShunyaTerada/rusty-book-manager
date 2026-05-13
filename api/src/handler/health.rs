@@ -1,5 +1,6 @@
 use axum::{extract::State, http::StatusCode};
 use registry::AppRegistry;
+use crate::adapter::src::database::ConnectionPool;
 
 pub async fn health_check() -> StatusCode {
     StatusCode::OK
