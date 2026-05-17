@@ -27,3 +27,32 @@ impl From<CreateBookRequest> for CreateBook {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BookResponse {
+    pub id: Uuid,
+    pub title: String,
+    pub author: String,
+    pub isbn: String,
+    pub description: String,
+}
+
+impl From<Book> for BookResponse {
+    fn from(value: Book) -> Self {
+        let Book {
+            id,
+            title,
+            author,
+            isbn,
+            description,
+        } = value;
+        Self {
+            id,
+            title,
+            author,
+            isbn,
+            description,
+        }
+    }
+}
