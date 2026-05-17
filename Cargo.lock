@@ -41,10 +41,16 @@ name = "api"
 version = "0.1.0"
 dependencies = [
  "adapter",
+ "anyhow",
  "axum",
+ "derive-new",
+ "kernel",
  "registry",
+ "serde",
+ "shared",
  "sqlx",
  "tokio",
+ "uuid",
 ]
 
 [[package]]
