@@ -1,6 +1,6 @@
+use adapter::database::ConnectionPool;
 use axum::{extract::State, http::StatusCode};
 use registry::AppRegistry;
-use adapter::database::ConnectionPool;
 
 pub async fn health_check() -> StatusCode {
     StatusCode::OK
