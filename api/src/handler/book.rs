@@ -1,8 +1,8 @@
 use axum::{
+    Json,
     extract::{Path, State},
     http::StatusCode,
     response::{IntoResponse, Response},
-    Json,
 };
 use registry::AppRegistry;
 use thiserror::Error;
@@ -12,7 +12,7 @@ use crate::model::book::{BookResponse, CreateBookRequest};
 
 #[derive(Error, Debug)]
 pub enum AppError {
-    #[error("{ 0 }")]
+    #[error("{0}")]
     InternalError(#[from] anyhow::Error),
 }
 impl IntoResponse for AppError {
