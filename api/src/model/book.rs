@@ -1,4 +1,4 @@
-use kernel::model::book::{event::CreateBook, Book};
+use kernel::model::book::{Book, event::CreateBook};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -12,12 +12,12 @@ pub struct CreateBookRequest {
 }
 
 impl From<CreateBookRequest> for CreateBook {
-   fn from(value: CreateBookRequest) -> Self {
-        let CreateBookRequest { 
-            title, 
-            author, 
-            isbn, 
-            description 
+    fn from(value: CreateBookRequest) -> Self {
+        let CreateBookRequest {
+            title,
+            author,
+            isbn,
+            description,
         } = value;
         Self {
             title,
