@@ -7,9 +7,14 @@ use axum::Router;
 use registry::AppRegistry;
 use shared::config::AppConfig;
 use tokio::net::TcpListener;
+use shared::env::{which, Environment};
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    init_logger()?;
     bootstrap().await
 }
 
@@ -37,3 +42,31 @@ async fn bootstrap() -> Result<()> {
 
     axum::serve(listener, app).await.map_err(Error::from)
 }
+
+//ロガーを初期化する関数
+fn init_logger() -> Result<()> {
+    let log_level = match which() {
+        Environment::Development => "debug",
+        Environment::Production => "info",
+    };
+
+    //ログレベル設定
+    let env_filter = 
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| log_level.into());
+
+    //ログの出力形式を設定
+    let subscriber = tracing_subscriber::fmt::layer()
+        .with_file(true)
+        .with_line_number(true)
+        .with_target(false);
+
+    tracing_subscriber::registry()
+        .with(subscriber)
+        .with(env_filter)
+        .try_init()?;
+
+    Ok(())
+}
+
+
+
