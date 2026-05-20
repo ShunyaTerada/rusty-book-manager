@@ -11,7 +11,7 @@ pub enum Environment {
 
 pub fn which() -> Environment {
     //debug_assertionsがonの場合はデバッグビルド
-    #[cfg(default_assertions)]
+    #[cfg(debug_assertions)]
     let default_env = Environment::Development;
     #[cfg(not(debug_assertions))]
     let default_env = Environment::Production;
