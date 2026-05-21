@@ -28,7 +28,7 @@ anyhow = "1.0.102"
 axum = { version = "0.8.9", features = ["macros"] }
 async-trait = "0.1.74"
 derive-new = "0.6.0"
-utopia = {version = "0.7.5", features = ["macros"]}
+utoipa = { version = "4.1.0", features = ["axum_extras", "uuid", "chrono"] }
 uuid = { version = "1.4.0", features = ["v4", "serde"]}
 chrono = { version = "0.4.26", default-features = false, features = ["serde"]}
 serde = { version = "1.0.174", features = ["derive"]}
@@ -62,8 +62,8 @@ registry.workspace = true
 shared.workspace = true
 anyhow.workspace = true
 axum.workspace = true
-utopia.workspace = true
-utopia-redoc = {version = "2.0.0", features = ["axum"]}
+utoipa.workspace = true
+utoipa-redoc = { version = "2.0.0", features = ["axum"] }
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"]}

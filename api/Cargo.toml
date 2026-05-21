@@ -12,7 +12,8 @@ registry.workspace = true
 axum.workspace = true
 derive-new.workspace =true
 serde.workspace = true
-utopia.workspace = true
+utoipa.workspace = true
+uuid.workspace = true
 chrono.workspace = true
 tokio.workspace = true
 tracing.workspace = true
@@ -23,6 +24,8 @@ tokio-stream.workspace = true
 garde.workspace = true
 
 [dev-dependencies]
+adapter.workspace = true
+sqlx.workspace = true
 anyhow.workspace = true
 hyper = "0.14.27"
 mockall.workspace = true
