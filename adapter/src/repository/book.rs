@@ -1,5 +1,4 @@
-use anyhow::Result;
-use async_trait::async_trait;
+use shared::error::AppResult;
 use derive_new::new;
 use kernel::model::book::{Book, event::CreateBook};
 use kernel::repository::book::BookRepositry;
@@ -15,7 +14,7 @@ pub struct BookRepositryImpl {
 
 #[async_trait]
 impl BookRepositry for BookRepositryImpl {
-    async fn create(&self, event: CreateBook) -> Result<()> {
+    async fn create(&self, event: CreateBook) -> AppResult<()> {
         sqlx::query!(
             r#"
                 INSERT INTO books (title, author, isbn, description)
@@ -27,12 +26,13 @@ impl BookRepositry for BookRepositryImpl {
             event.description
         )
         .execute(self.db.inner_ref())
-        .await?;
+        .await
+        .map_err(AppError::SpecificOperationError)?;
 
         Ok(())
     }
 
-    async fn find_all(&self) -> Result<Vec<Book>> {
+    async fn find_all(&self) -> AppResult<Vec<Book>> {
         let rows: Vec<BookRow> = sqlx::query_as!(
             BookRow,
             r#"
@@ -42,12 +42,13 @@ impl BookRepositry for BookRepositryImpl {
             "#
         )
         .fetch_all(self.db.inner_ref())
-        .await?;
+        .await
+        .map_err(AppError::SpecificOperationError)?;
 
         Ok(rows.into_iter().map(Book::from).collect())
     }
 
-    async fn find_by_id(&self, book_id: Uuid) -> Result<Option<Book>> {
+    async fn find_by_id(&self, book_id: Uuid) -> AppResult<Option<Book>> {
         let rows: Option<BookRow> = sqlx::query_as!(
             BookRow,
             r#"
@@ -63,7 +64,8 @@ impl BookRepositry for BookRepositryImpl {
             book_id
         )
         .fetch_optional(self.db.inner_ref())
-        .await?;
+        .await
+        .map_err(AppError::SpecificOperationError)?;
 
         Ok(rows.map(Book::from))
     }
@@ -74,7 +76,7 @@ mod tests {
     use super::*;
 
     #[sqlx::test]
-    async fn test_register_book(pool: sqlx::PgPool) -> anyhow::Result<()> {
+    async fn test_register_book(pool: sqlx::PgPool) -> AppResult<()> {
         //BookRepositryImplを初期化
         let repo = BookRepositryImpl::new(ConnectionPool::new(pool));
 
