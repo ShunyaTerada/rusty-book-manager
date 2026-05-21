@@ -1,4 +1,5 @@
-use shared::error::AppResult;
+use async_trait::async_trait;
+use shared::error::{AppError, AppResult};
 use derive_new::new;
 use kernel::model::book::{Book, event::CreateBook};
 use kernel::repository::book::BookRepositry;

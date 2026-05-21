@@ -9,7 +9,7 @@ pub enum AppError {
     EntityNotFound(String),
     #[error("{0}")]
     ValidationError(#[from] garde::Report),
-    #[error("{トランザクションを実行できませんでした}")]
+    #[error("トランザクションを実行できませんでした")]
     TransactionError(#[source] sqlx::Error),
     #[error("データベース処理中にエラーが発生しました")]
     SpecificOperationError(#[source] sqlx::Error),
@@ -21,11 +21,11 @@ pub enum AppError {
     BcryptError(#[from] bcrypt::BcryptError),
     #[error("{0}")]
     ConvertToUuidError(#[from] uuid::Error),
-    #[error("{ログインに失敗しました}")]
+    #[error("ログインに失敗しました")]
     UnauthenticatedError,
     #[error("認可情報が誤っています")]
     UnauthorizedError,
-    #[error("{許可されていない操作です}")]
+    #[error("許可されていない操作です")]
     ForbiddenOperation,
     #[error("{0}")]
     ConversionEntityError(String),
