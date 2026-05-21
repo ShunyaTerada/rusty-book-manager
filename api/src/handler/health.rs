@@ -1,4 +1,3 @@
-use adapter::database::ConnectionPool;
 use axum::{extract::State, http::StatusCode};
 use registry::AppRegistry;
 
@@ -14,18 +13,24 @@ pub async fn health_check_db(State(registry): State<AppRegistry>) -> StatusCode 
     }
 }
 
-#[tokio::test]
-async fn health_check_works() {
-    let status_code = health_check().await;
-    assert_eq!(status_code, StatusCode::OK);
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use adapter::database::ConnectionPool;
 
-#[sqlx::test]
-async fn health_check_db_works(pool: sqlx::PgPool) {
-    let connection_pool = ConnectionPool::new(pool);
+    #[tokio::test]
+    async fn health_check_works() {
+        let status_code = health_check().await;
+        assert_eq!(status_code, StatusCode::OK);
+    }
 
-    let registry = AppRegistry::new(connection_pool);
+    #[sqlx::test]
+    async fn health_check_db_works(pool: sqlx::PgPool) {
+        let connection_pool = ConnectionPool::new(pool);
 
-    let status_code = health_check_db(State(registry)).await;
-    assert_eq!(status_code, StatusCode::OK);
+        let registry = AppRegistry::new(connection_pool);
+
+        let status_code = health_check_db(State(registry)).await;
+        assert_eq!(status_code, StatusCode::OK);
+    }
 }
