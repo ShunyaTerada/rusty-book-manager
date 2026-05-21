@@ -1,7 +1,8 @@
 use std::net::{Ipv4Addr, SocketAddr};
 use adapter::database::connect_database_with;
-use anyhow::{Error, Result};
+use anyhow::Result;
 use api::route::{book::build_book_routers, health::build_health_check_routers};
+use axum::http::Method;
 use axum::Router;
 use registry::AppRegistry;
 use shared::config::AppConfig;
@@ -15,6 +16,7 @@ use tower_http::trace::{
     DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer,
 };
 use tower_http::LatencyUnit;
+use tower_http::cors::{self, CorsLayer};
 use tracing::Level;
 
 #[tokio::main]
@@ -65,6 +67,14 @@ async fn bootstrap() -> Result<()> {
             "Unexpected error"
             )
         })
+}
+
+// CORS の設定を行う関数
+fn cors() -> CorsLayer {
+    CorsLayer::new()
+        .allow_headers(cors::Any)
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+        .allow_origin(cors::Any)
 }
 
 //ロガーを初期化する関数

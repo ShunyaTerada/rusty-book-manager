@@ -4,10 +4,7 @@ use adapter::{
     database::ConnectionPool,
     repository::{book::BookRepositryImpl, health::HealthCheckRepositoryImpl},
 };
-use kernel::{
-    model::book::Book,
-    repository::{book::BookRepositry, health::HealthCheckRepository},
-};
+use kernel::repository::{book::BookRepositry, health::HealthCheckRepository};
 
 //DIコンテナの役割を果たす構造体定義する。Cloneは後ほどaxum側で必要になるため。
 #[derive(Clone)]
