@@ -10,7 +10,7 @@ INSERT INTO
 SELECT
     'Terada Shunya',
     'TeradaShunya@example.com',
-    '$2b$12$GFf.eB7OpIcB3hpCr/JhoOOVPHQ0YE9oLnDA0KyHq7oGBvAFospLK',
+    '$2b$12$6oqFOPi7s417e6ECUgALVOqI0ad6D8wvGDN8aOIx9lYfuIjcQOz.O',
     role_id
 FROM
     roles
