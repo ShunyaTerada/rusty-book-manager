@@ -10,7 +10,7 @@ CREATE OR REPLACE FUNCTION set_updated_at() RETURNS trigger AS '
 CREATE TABLE IF NOT EXISTS roles (
     role_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL UNIQUE
-)
+);
 
 -- usersテーブルの作成
 CREATE TABLE IF NOT EXISTS users (
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (role_id) REFERENCES roles(role_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
-)
+);
 
 -- users テーブルのupdated_atを自動更新するためのトリガー
 CREATE TRIGGER users_updated_at 
