@@ -1,5 +1,5 @@
 use kernel::model::{
-    book::{Book, event::CreateBook},
+    book::{event::CreateBook, Book},
     id::BookId,
 };
 use serde::{Deserialize, Serialize};

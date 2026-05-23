@@ -1,5 +1,5 @@
 use shared::config::DatabaseConfig;
-use sqlx::{PgPool, postgres::PgConnectOptions};
+use sqlx::{postgres::PgConnectOptions, PgPool};
 
 pub mod model;
 

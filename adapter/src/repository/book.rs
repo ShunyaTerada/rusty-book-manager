@@ -1,12 +1,12 @@
 use async_trait::async_trait;
 use derive_new::new;
-use kernel::model::book::{Book, event::CreateBook};
+use kernel::model::book::{event::CreateBook, Book};
 use kernel::model::id::BookId;
 use kernel::repository::book::BookRepositry;
 use shared::error::{AppError, AppResult};
 
-use crate::database::ConnectionPool;
 use crate::database::model::book::BookRow;
+use crate::database::ConnectionPool;
 
 #[derive(new)]
 pub struct BookRepositryImpl {
