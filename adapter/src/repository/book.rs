@@ -98,7 +98,7 @@ mod tests {
 
         //蔵書の一覧の最初のデータから蔵書IDを取得し、
         //find_by_idメソッドでその蔵書データを取得できることを確認
-        let book_id: BookId = res[0].id.into();
+        let book_id = res[0].id;
         let res = repo.find_by_id(book_id).await?;
         assert!(res.is_some());
 
@@ -111,7 +111,6 @@ mod tests {
             isbn,
             description,
         } = res.unwrap();
-        let id: BookId = id.into();
         assert_eq!(id, book_id);
         assert_eq!(title, "Test Title");
         assert_eq!(author, "Test Author");
