@@ -3,9 +3,9 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
+use kernel::model::id::BookId;
 use registry::AppRegistry;
 use shared::error::{AppError, AppResult};
-use uuid::Uuid;
 
 use crate::model::book::{BookResponse, CreateBookRequest};
 
@@ -32,7 +32,7 @@ pub async fn show_book_list(
 }
 
 pub async fn show_book(
-    Path(book_id): Path<Uuid>,
+    Path(book_id): Path<BookId>,
     State(registry): State<AppRegistry>,
 ) -> AppResult<Json<BookResponse>> {
     registry
@@ -41,6 +41,8 @@ pub async fn show_book(
         .await
         .and_then(|bc| match bc {
             Some(bc) => Ok(Json(bc.into())),
-            None => Err(AppError::EntityNotFound("The specific book was not found".into())),
+            None => Err(AppError::EntityNotFound(
+                "The specific book was not found".into(),
+            )),
         })
 }

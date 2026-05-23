@@ -1,9 +1,9 @@
 use async_trait::async_trait;
-use shared::error::{AppError, AppResult};
 use derive_new::new;
 use kernel::model::book::{Book, event::CreateBook};
+use kernel::model::id::BookId;
 use kernel::repository::book::BookRepositry;
-use uuid::Uuid;
+use shared::error::{AppError, AppResult};
 
 use crate::database::ConnectionPool;
 use crate::database::model::book::BookRow;
@@ -49,7 +49,7 @@ impl BookRepositry for BookRepositryImpl {
         Ok(rows.into_iter().map(Book::from).collect())
     }
 
-    async fn find_by_id(&self, book_id: Uuid) -> AppResult<Option<Book>> {
+    async fn find_by_id(&self, book_id: BookId) -> AppResult<Option<Book>> {
         let rows: Option<BookRow> = sqlx::query_as!(
             BookRow,
             r#"
@@ -62,7 +62,7 @@ impl BookRepositry for BookRepositryImpl {
             FROM books
             WHERE book_id = $1
         "#,
-            book_id
+            book_id as _
         )
         .fetch_optional(self.db.inner_ref())
         .await
@@ -98,7 +98,7 @@ mod tests {
 
         //蔵書の一覧の最初のデータから蔵書IDを取得し、
         //find_by_idメソッドでその蔵書データを取得できることを確認
-        let book_id = res[0].id;
+        let book_id: BookId = res[0].id.into();
         let res = repo.find_by_id(book_id).await?;
         assert!(res.is_some());
 
@@ -111,6 +111,7 @@ mod tests {
             isbn,
             description,
         } = res.unwrap();
+        let id: BookId = id.into();
         assert_eq!(id, book_id);
         assert_eq!(title, "Test Title");
         assert_eq!(author, "Test Author");
