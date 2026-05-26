@@ -7,7 +7,7 @@ use crate::model::{
 };
 
 #[async_trait]
-pub trait AuthRepositry: Send + Sync {
+pub trait AuthRepository: Send + Sync {
     async fn fetch_user_id_from_token(
         &self,
         access_token: AccessToken,

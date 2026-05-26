@@ -2,19 +2,19 @@ use async_trait::async_trait;
 use derive_new::new;
 use kernel::model::book::{Book, event::CreateBook};
 use kernel::model::id::BookId;
-use kernel::repository::book::BookRepositry;
+use kernel::repository::book::BookRepository;
 use shared::error::{AppError, AppResult};
 
 use crate::database::ConnectionPool;
 use crate::database::model::book::BookRow;
 
 #[derive(new)]
-pub struct BookRepositryImpl {
+pub struct BookRepositoryImpl {
     db: ConnectionPool,
 }
 
 #[async_trait]
-impl BookRepositry for BookRepositryImpl {
+impl BookRepository for BookRepositoryImpl {
     async fn create(&self, event: CreateBook) -> AppResult<()> {
         sqlx::query!(
             r#"
@@ -80,7 +80,7 @@ mod tests {
     #[ignore = "booksテーブルにuser_idを追加したことをアプリケーション側に反映するまで保留"]
     async fn test_register_book(pool: sqlx::PgPool) -> AppResult<()> {
         //BookRepositryImplを初期化
-        let repo = BookRepositryImpl::new(ConnectionPool::new(pool));
+        let repo = BookRepositoryImpl::new(ConnectionPool::new(pool));
 
         //投入するための蔵書データを作成
         let book = CreateBook {

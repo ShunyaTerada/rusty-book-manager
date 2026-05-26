@@ -7,7 +7,7 @@ use kernel::{
         auth::{AccessToken, event::CreateToken},
         id::UserId,
     },
-    repository::auth::AuthRepositry,
+    repository::auth::AuthRepository,
 };
 use shared::error::{AppError, AppResult};
 
@@ -27,7 +27,7 @@ pub struct AuthRepositoryImpl {
 }
 
 #[async_trait]
-impl AuthRepositry for AuthRepositoryImpl {
+impl AuthRepository for AuthRepositoryImpl {
     async fn fetch_user_id_from_token(
         &self,
         access_token: AccessToken,
