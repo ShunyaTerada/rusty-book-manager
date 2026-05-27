@@ -1,24 +1,38 @@
+use anyhow::Ok;
 use axum::{
     Json,
     extract::{Path, State},
     http::StatusCode,
 };
-use kernel::model::id::UserId;
+use kernel::model::{
+    auth::{AccessToken, event::CreateToken},
+    id::UserId,
+};
 use registry::AppRegistry;
 use shared::error::AppResult;
 
-use crate::model::auth::LoginRequest;
+use crate::model::auth::{AccessTokenResponse, LoginRequest};
 
 pub async fn login(
     Json(req): Json<LoginRequest>,
     State(registry): State<AppRegistry>,
-) -> AppResult<Json<UserId>> {
+) -> AppResult<Json<AccessTokenResponse>> {
     let LoginRequest { email, password } = req;
-    registry
+    let user_id = registry
         .auth_repository()
         .verify_user(&email, &password)
+        .await?;
+
+    registry
+        .auth_repository()
+        .create_token(CreateToken::new(user_id))
         .await
-        .map(Json)
+        .map(|v| {
+            Json(AccessTokenResponse {
+                user_id,
+                access_token: v.0,
+            })
+        })
 }
 
 pub async fn logout(
