@@ -1,4 +1,4 @@
-use kernel::model::{auth::AccessToken, id::UserId};
+use kernel::model::id::UserId;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]
