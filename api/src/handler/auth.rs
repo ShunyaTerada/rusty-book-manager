@@ -1,13 +1,9 @@
-use anyhow::Ok;
 use axum::{
     Json,
     extract::{Path, State},
     http::StatusCode,
 };
-use kernel::model::{
-    auth::{AccessToken, event::CreateToken},
-    id::UserId,
-};
+use kernel::model::{auth::event::CreateToken, id::UserId};
 use registry::AppRegistry;
 use shared::error::AppResult;
 
@@ -23,16 +19,15 @@ pub async fn login(
         .verify_user(&email, &password)
         .await?;
 
-    registry
+    let access_token = registry
         .auth_repository()
         .create_token(CreateToken::new(user_id))
-        .await
-        .map(|v| {
-            Json(AccessTokenResponse {
-                user_id,
-                access_token: v.0,
-            })
-        })
+        .await?;
+
+    Ok(Json(AccessTokenResponse {
+        user_id,
+        access_token: access_token.0,
+    }))
 }
 
 pub async fn logout(
