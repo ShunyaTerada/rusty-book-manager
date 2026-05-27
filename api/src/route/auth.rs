@@ -2,8 +2,12 @@ use axum::{Router, routing::post};
 
 use registry::AppRegistry;
 
-use crate::handler::auth::login;
+use crate::handler::auth::{login, logout};
 
-pub fn buid_auth_router() -> Router<AppRegistry> {
-    Router::new().route("/login{user_id}", post(login))
+pub fn build_auth_router() -> Router<AppRegistry> {
+    let auth_router = Router::new()
+        .route("/login", post(login))
+        .route("/logout", post(logout));
+
+    Router::new().nest("/auth", auth_router)
 }
