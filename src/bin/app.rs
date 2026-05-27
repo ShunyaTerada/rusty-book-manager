@@ -32,7 +32,10 @@ async fn bootstrap() -> Result<()> {
     // creat AppConfig
     let app_config = AppConfig::new()?;
     //Redis接続
-    let redis_client = Arc::new(RedisClient::new(&shared::config::RedisConfig { host: (), port: () }));
+    let redis_client = Arc::new(RedisClient::new(&shared::config::RedisConfig {
+        host: Ipv4Addr::LOCALHOST.into(),
+        port: 8080,
+    })?);
     // データベースの接続を行う。コネクションプールを取り出しておく。
     let pool = connect_database_with(&app_config.database);
 
