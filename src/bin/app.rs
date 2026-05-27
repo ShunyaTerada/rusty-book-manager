@@ -1,21 +1,25 @@
 use adapter::database::connect_database_with;
+use adapter::redis::RedisClient;
 use anyhow::Context;
 use anyhow::Result;
-use api::route::{book::build_book_routers, health::build_health_check_routers};
-use axum::http::Method;
+use api::route::{
+    auth::build_auth_router, book::build_book_routers, health::build_health_check_routers,
+};
 use axum::Router;
+use axum::http::Method;
 use registry::AppRegistry;
 use shared::config::AppConfig;
-use shared::env::{which, Environment};
+use shared::env::{Environment, which};
 use std::net::{Ipv4Addr, SocketAddr};
+use std::sync::Arc;
 use tokio::net::TcpListener;
+use tower_http::LatencyUnit;
 use tower_http::cors::{self, CorsLayer};
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
-use tower_http::LatencyUnit;
 use tracing::Level;
+use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -27,15 +31,18 @@ async fn main() -> Result<()> {
 async fn bootstrap() -> Result<()> {
     // creat AppConfig
     let app_config = AppConfig::new()?;
+    //Redis接続
+    let redis_client = Arc::new(RedisClient::new(&shared::config::RedisConfig { host: (), port: () }));
     // データベースの接続を行う。コネクションプールを取り出しておく。
     let pool = connect_database_with(&app_config.database);
 
     //AppRegistryを生成する。
-    let registry = AppRegistry::new(pool);
+    let registry = AppRegistry::new(pool, redis_client, app_config);
 
     //build_health_check_routers関数を呼び出す。AppRegistyをRouterに登録しておく。
     let app = Router::new()
         .merge(build_health_check_routers())
+        .merge(build_auth_router())
         .merge(build_book_routers())
         .layer(cors())
         .layer(
