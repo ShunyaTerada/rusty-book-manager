@@ -10,8 +10,8 @@ use shared::error::AppResult;
 use crate::model::auth::{AccessTokenResponse, LoginRequest};
 
 pub async fn login(
-    Json(req): Json<LoginRequest>,
     State(registry): State<AppRegistry>,
+    Json(req): Json<LoginRequest>,
 ) -> AppResult<Json<AccessTokenResponse>> {
     let LoginRequest { email, password } = req;
     let user_id = registry
