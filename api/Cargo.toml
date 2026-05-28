@@ -22,6 +22,7 @@ strum.workspace = true
 axum-extra.workspace = true
 tokio-stream.workspace = true
 garde.workspace = true
+async-trait.workspace = true
 
 [dev-dependencies]
 adapter.workspace = true
