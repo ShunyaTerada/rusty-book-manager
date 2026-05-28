@@ -30,7 +30,7 @@ pub struct AuthRepositoryImpl {
 impl AuthRepository for AuthRepositoryImpl {
     async fn fetch_user_id_from_token(
         &self,
-        access_token: AccessToken,
+        access_token: &AccessToken,
     ) -> AppResult<Option<UserId>> {
         let key: AuthorizationKey = access_token.into();
         self.kv

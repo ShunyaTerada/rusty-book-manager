@@ -1,20 +1,9 @@
-use axum::{
-    extractor::FromRequestParts,
-    http::request::Parts,
-    async_trait, 
-    RequestPartsExt,
-};  
+use axum::{RequestPartsExt, async_trait, extractor::FromRequestParts, http::request::Parts};
 use axum_extra::{
-    TypedHeader, Typeheader, headers::{
-        Authorization, authorization::Bearer
-    }
+    TypedHeader, Typeheader,
+    headers::{Authorization, authorization::Bearer},
 };
-use kernel::model::{
-    auth::AccessToken,
-    id::UserId,
-    role::Role,
-    user::User,
-};
+use kernel::model::{auth::AccessToken, id::UserId, role::Role, user::User};
 use shared::error::AppError;
 
 use registry::AppRegistry;
@@ -22,7 +11,7 @@ use registry::AppRegistry;
 //リクエストの前処理を実行後、handlerに渡す構造体を定義
 pub struct AuthorizedUser {
     pub access_token: AccessToken,
-    pub user:User,
+    pub user: User,
 }
 
 impl AuthorizedUser {
@@ -48,25 +37,23 @@ impl FromRequestParts<AppRegistry> for AuthorizedUser {
         let TypedHeader(Authorization(bearer)) = parts
             .extract::<TypedHeader<Authorization<Bearer>>>()
             .await
-            .map_err();
-            
+            .map_err(|_| AppError::UnauthorizedError)?;
 
         let access_token = AccessToken(bearer.token().to_string());
 
+        //アクセストークンが紐づくユーザーIDを抽出する。
         let user_id: UserId = registry
             .auth_repository()
-            .fetch_user_id_from_token(access_token)
+            .fetch_user_id_from_token(&access_token)
             .await?
             .ok_or(AppError::UnauthenticatedError)?;
 
+        //ユーザーIDでデータベースからユーザーのレコードを引く。
         let user: User = registry
             .user_repository()
             .find_current_user(user_id)
             .ok_or(AppError::UnauthorizedError);
 
-        Ok(Self{
-            access_token,
-            user
-        })
+        Ok(Self { access_token, user })
     }
 }
