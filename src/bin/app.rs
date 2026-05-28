@@ -32,15 +32,12 @@ async fn bootstrap() -> Result<()> {
     // creat AppConfig
     let app_config = AppConfig::new()?;
     //Redis接続
-    let redis_client = Arc::new(RedisClient::new(&shared::config::RedisConfig {
-        host: Ipv4Addr::LOCALHOST.into(),
-        port: 8080,
-    })?);
+    let kv = Arc::new(RedisClient::new(&app_config.redis)?);
     // データベースの接続を行う。コネクションプールを取り出しておく。
     let pool = connect_database_with(&app_config.database);
 
     //AppRegistryを生成する。
-    let registry = AppRegistry::new(pool, redis_client, app_config);
+    let registry = AppRegistry::new(pool, kv, app_config);
 
     //build_health_check_routers関数を呼び出す。AppRegistyをRouterに登録しておく。
     let app = Router::new()
