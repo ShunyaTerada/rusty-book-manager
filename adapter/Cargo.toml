@@ -16,6 +16,8 @@ secrecy.workspace = true
 sqlx.workspace = true
 redis.workspace = true
 uuid.workspace = true
+axum_extra.workspace = true
+strum.workspace = true
 
 [dev-dependencies]
 anyhow.workspace = true
