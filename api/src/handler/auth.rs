@@ -3,11 +3,12 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
-use kernel::model::{auth::event::CreateToken, id::UserId};
+use hyper::StatusCode;
+use kernel::model::{auth::{AccessToken, event::CreateToken}, id::UserId};
 use registry::AppRegistry;
-use shared::error::AppResult;
+use shared::error::{AppError, AppResult};
 
-use crate::model::auth::{AccessTokenResponse, LoginRequest};
+use crate::{extractor::AuthorizedUser, model::auth::{AccessTokenResponse, LoginRequest}};
 
 pub async fn login(
     State(registry): State<AppRegistry>,
@@ -31,8 +32,21 @@ pub async fn login(
 }
 
 pub async fn logout(
-    Path(user_id): Path<UserId>,
+    user: AuthorizedUser,
     State(registry): State<AppRegistry>,
 ) -> AppResult<StatusCode> {
-    todo!()
+    let user: User = registry
+        .user_repository()
+        .fetch_user(user)
+        .await
+        .map_err(AppError::UnauthorizedError);
+
+    registry
+        .auth_repository()
+        .delete_token(user.access_token)
+        .await
+        .map(|_|StatusCode::NO_CONTENT)
+        .map_err(|e| AppError::TransactionError(e))
+        
+            
 }
