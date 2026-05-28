@@ -1,6 +1,6 @@
-use axum::{RequestPartsExt, async_trait, extractor::FromRequestParts, http::request::Parts};
+use axum::{RequestPartsExt, async_trait, extract::FromRequestParts, http::request::Parts};
 use axum_extra::{
-    TypedHeader, Typeheader,
+    TypedHeader,
     headers::{Authorization, authorization::Bearer},
 };
 use kernel::model::{auth::AccessToken, id::UserId, role::Role, user::User};
@@ -52,7 +52,8 @@ impl FromRequestParts<AppRegistry> for AuthorizedUser {
         let user: User = registry
             .user_repository()
             .find_current_user(user_id)
-            .ok_or(AppError::UnauthorizedError);
+            .await
+            .ok_or(AppError::UnauthorizedError)?;
 
         Ok(Self { access_token, user })
     }
