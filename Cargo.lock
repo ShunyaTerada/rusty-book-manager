@@ -8,6 +8,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "axum-extra",
  "bcrypt",
  "chrono",
  "derive-new",
@@ -16,6 +17,7 @@ dependencies = [
  "secrecy",
  "shared",
  "sqlx",
+ "strum",
  "uuid",
 ]
 
