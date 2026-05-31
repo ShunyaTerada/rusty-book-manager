@@ -48,7 +48,26 @@ impl UserRepository for UserRepositoryImpl {
         }
     }
     async fn find_all(&self) -> AppResult<Vec<User>> {
-        todo!()
+        let row: Vec<UserRow> = sqlx::query_as!(
+            UserRow,
+            r#"
+                SELECT
+                    u.user_id,
+                    u.name,
+                    u.email,
+                    r.name AS role_name,
+                    u.created_at,
+                    u.updated_at
+                FROM users AS u
+                INNER JOIN roles AS r USING()
+                ORDER BY created DESC
+            "#
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        Ok(row.into_iter().map(User::from).collect())
     }
     async fn create(&self, event: CreateUser) -> AppResult<()> {
         todo!()
