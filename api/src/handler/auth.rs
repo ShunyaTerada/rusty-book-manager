@@ -3,7 +3,6 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
-use hyper::StatusCode;
 use kernel::model::{
     auth::{AccessToken, event::CreateToken},
     id::UserId,
