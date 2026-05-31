@@ -52,7 +52,7 @@ impl FromRequestParts<AppRegistry> for AuthorizedUser {
         let user: User = registry
             .user_repository()
             .find_current_user(user_id)
-            .await
+            .await?
             .ok_or(AppError::UnauthorizedError)?;
 
         Ok(Self { access_token, user })
