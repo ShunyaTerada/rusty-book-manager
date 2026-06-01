@@ -8,12 +8,8 @@ use adapter::{
         user::UserRepositoryImpl,
     },
 };
-use kernel::{
-    model::user::User,
-    repository::{
-        auth::AuthRepository, book::BookRepository, health::HealthCheckRepository,
-        user::UserRepository,
-    },
+use kernel::repository::{
+    auth::AuthRepository, book::BookRepository, health::HealthCheckRepository, user::UserRepository,
 };
 use shared::config::AppConfig;
 
