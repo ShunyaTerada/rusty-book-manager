@@ -1,3 +1,4 @@
+use bcrypt::verify;
 use kernel::{
     model::{
         id::UserId,
@@ -83,10 +84,11 @@ impl UserRepository for UserRepositoryImpl {
                 INSERT INTO users(name, email, password_hash, role_id)
                 SELECT $1, $2, $3, $4, role_id FROM roles WHERE name = $5;
             "#,
+            user_id as _,
             event.name,
             event.email,
             hashed_password,
-            role.as_ref()
+            role.as_ref(),
         )
         .execute(self.db.inner_ref())
         .await
@@ -106,12 +108,86 @@ impl UserRepository for UserRepositoryImpl {
         })
     }
     async fn update_password(&self, event: UpdateUserPassword) -> AppResult<()> {
-        todo!()
+        let mut tx = self.db.begin().await?;
+
+        let original_password_hash = sqlx::query!(
+            r#"
+                SELECT password_hash From users
+                WHERE user_id = $1
+            "#,
+            event.user_id as _
+        )
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(AppError::SpecificOperationError)?
+        .password_hash;
+
+        verify(&event.current_password, &original_password_hash)?;
+
+        let new_password_hash = hash_password(&event.new_password)?;
+        sqlx::query!(
+            r#"
+                UPDATE users SET password_hash = $1 
+                WHERE user_id = $2 
+            "#,
+            new_password_hash,
+            event.user_id as _
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        tx.commit().await.map_err(AppError::TransactionError)?;
+
+        Ok(())
     }
     async fn update_role(&self, event: UpdateUserRole) -> AppResult<()> {
-        todo!()
+        let res = sqlx::query!(
+            r#"
+                UPDATE users
+                SET role_id = (SELECT role_id From roles WHERE name = $1)
+                WHERE user_id = $2
+            "#,
+            event.role.as_ref(),
+            event.user_id as _
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        if res.rows_affected() < 1 {
+            return Err(AppError::EntityNotFound("Specified user not found".into()));
+        }
+
+        Ok(())
     }
     async fn delete(&self, event: DeleteUser) -> AppResult<()> {
-        todo!()
+        let res = sqlx::query!(
+            r#"
+                DELETE users WHERE user_id = $1
+            "#,
+            event.user_id as _
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        if res.rows_affected() < 1 {
+            return Err(AppError::EntityNotFound("Specified user not found".into()));
+        }
+
+        Ok(())
     }
+}
+
+fn hash_password(password: &str) -> AppResult<String> {
+    bcrypt::hash(password, bcrypt::DEFAULT_COST).map_err(AppError::from)
+}
+
+fn verify_password(password: &str, hash: &str) -> AppResult<()> {
+    let valid = bcrypt::verify(password, hash)?;
+    if !valid {
+        return Err(AppError::UnauthorizedError);
+    }
+    Ok(())
 }
