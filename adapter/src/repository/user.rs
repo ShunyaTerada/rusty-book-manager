@@ -81,7 +81,7 @@ impl UserRepository for UserRepositoryImpl {
 
         let res = sqlx::query!(
             r#"
-                INSERT INTO users(name, email, password_hash, role_id)
+                INSERT INTO users(user_id, name, email, password_hash, role_id)
                 SELECT $1, $2, $3, $4, role_id FROM roles WHERE name = $5;
             "#,
             user_id as _,
@@ -164,7 +164,7 @@ impl UserRepository for UserRepositoryImpl {
     async fn delete(&self, event: DeleteUser) -> AppResult<()> {
         let res = sqlx::query!(
             r#"
-                DELETE users WHERE user_id = $1
+                DELETE FROM users WHERE user_id = $1
             "#,
             event.user_id as _
         )
