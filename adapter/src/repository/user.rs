@@ -1,6 +1,7 @@
 use kernel::{
     model::{
         id::UserId,
+        role::Role,
         user::{
             User,
             event::{CreateUser, DeleteUser, UpdateUserPassword, UpdateUserRole},
@@ -48,7 +49,7 @@ impl UserRepository for UserRepositoryImpl {
         }
     }
     async fn find_all(&self) -> AppResult<Vec<User>> {
-        let row: Vec<UserRow> = sqlx::query_as!(
+        let users = sqlx::query_as!(
             UserRow,
             r#"
                 SELECT
@@ -59,18 +60,50 @@ impl UserRepository for UserRepositoryImpl {
                     u.created_at,
                     u.updated_at
                 FROM users AS u
-                INNER JOIN roles AS r USING()
-                ORDER BY created DESC
+                INNER JOIN roles AS r USING(role_id)
+                ORDER BY u.created_at DESC
             "#
         )
         .fetch_all(self.db.inner_ref())
         .await
+        .map_err(AppError::SpecificOperationError)?
+        .into_iter()
+        .filter_map(|r| User::try_from(r).ok())
+        .collect();
+
+        Ok(users)
+    }
+    async fn create(&self, event: CreateUser) -> AppResult<User> {
+        let user_id = UserId::new();
+        let hashed_password = hash_password(&event.password)?;
+        let role = Role::User;
+
+        let res = sqlx::query!(
+            r#"
+                INSERT INTO users(name, email, password_hash, role_id)
+                SELECT $1, $2, $3, $4, role_id FROM roles WHERE name = $5;
+            "#,
+            event.name,
+            event.email,
+            hashed_password,
+            role.as_ref()
+        )
+        .execute(self.db.inner_ref())
+        .await
         .map_err(AppError::SpecificOperationError)?;
 
-        Ok(row.into_iter().map(User::from).collect())
-    }
-    async fn create(&self, event: CreateUser) -> AppResult<()> {
-        todo!()
+        if res.rows_affected() < 1 {
+            return Err(AppError::NoRowsAffectedError(
+                "No user has been created".into(),
+            ));
+        }
+
+        Ok(User {
+            id: user_id,
+            name: event.name,
+            email: event.email,
+            role,
+        })
     }
     async fn update_password(&self, event: UpdateUserPassword) -> AppResult<()> {
         todo!()
