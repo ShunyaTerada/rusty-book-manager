@@ -1,4 +1,3 @@
-use bcrypt::verify;
 use kernel::{
     model::{
         id::UserId,
@@ -122,7 +121,7 @@ impl UserRepository for UserRepositoryImpl {
         .map_err(AppError::SpecificOperationError)?
         .password_hash;
 
-        verify(&event.current_password, &original_password_hash)?;
+        verify_password(&event.current_password, &original_password_hash)?;
 
         let new_password_hash = hash_password(&event.new_password)?;
         sqlx::query!(
