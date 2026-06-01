@@ -1,14 +1,7 @@
-use axum::{
-    Json,
-    extract::{Path, State},
-    http::StatusCode,
-};
-use kernel::model::{
-    auth::{AccessToken, event::CreateToken},
-    id::UserId,
-};
+use axum::{Json, extract::State, http::StatusCode};
+use kernel::model::auth::event::CreateToken;
 use registry::AppRegistry;
-use shared::error::{AppError, AppResult};
+use shared::error::AppResult;
 
 use crate::{
     extractor::AuthorizedUser,
