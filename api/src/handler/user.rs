@@ -8,7 +8,10 @@ use registry::AppRegistry;
 use kernel::model::{
     id::UserId,
     role::Role,
-    user::event::{CreateUser, DeleteUser, UpdateUserPassword, UpdateUserRole},
+    user::{
+        User,
+        event::{CreateUser, DeleteUser, UpdateUserPassword, UpdateUserRole},
+    },
 };
 
 use crate::{
@@ -26,8 +29,16 @@ pub async fn get_current_user(user: AuthorizedUser) -> AppResult<Json<UserRespon
     Ok(Json(UserResponse::from(user.user)))
 }
 
-pub async fn list_user() {
-    todo!()
+pub async fn list_user(State(repository): State<AppRegistry>) -> AppResult<Vec<UserResponse>> {
+    let vec: Vec<UserResponse> = repository
+        .user_repository()
+        .find_all()
+        .await?
+        .into_iter()
+        .map(UserResponse::from)
+        .collect();
+
+    Ok(vec)
 }
 
 pub async fn register_user() {
