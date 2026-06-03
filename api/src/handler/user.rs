@@ -29,8 +29,11 @@ pub async fn get_current_user(user: AuthorizedUser) -> AppResult<Json<UserRespon
     Ok(Json(UserResponse::from(user.user)))
 }
 
-pub async fn list_user(State(repository): State<AppRegistry>) -> AppResult<Vec<UserResponse>> {
-    let vec: Vec<UserResponse> = repository
+pub async fn list_user(
+    _user: AuthorizedUser,
+    State(repository): State<AppRegistry>,
+) -> AppResult<Json<UsersResponse>> {
+    let item: Vec<UserResponse> = repository
         .user_repository()
         .find_all()
         .await?
@@ -38,7 +41,7 @@ pub async fn list_user(State(repository): State<AppRegistry>) -> AppResult<Vec<U
         .map(UserResponse::from)
         .collect();
 
-    Ok(vec)
+    Ok(Json(UsersResponse { item }))
 }
 
 pub async fn register_user() {
