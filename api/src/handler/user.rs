@@ -30,9 +30,13 @@ pub async fn get_current_user(user: AuthorizedUser) -> AppResult<Json<UserRespon
 }
 
 pub async fn list_user(
-    _user: AuthorizedUser,
+    user: AuthorizedUser,
     State(registry): State<AppRegistry>,
 ) -> AppResult<Json<UsersResponse>> {
+    if !user.id_admin() {
+        return Err(AppError::UnauthorizedError);
+    }
+
     let item: Vec<UserResponse> = registry
         .user_repository()
         .find_all()
