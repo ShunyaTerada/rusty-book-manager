@@ -19,7 +19,7 @@ impl AuthorizedUser {
         self.user.id
     }
 
-    pub fn id_admin(&self) -> bool {
+    pub fn is_admin(&self) -> bool {
         self.user.role == Role::Admin
     }
 }

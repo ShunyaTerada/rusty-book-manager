@@ -6,14 +6,7 @@ use axum::{
 use hyper::StatusCode;
 use registry::AppRegistry;
 
-use kernel::model::{
-    id::UserId,
-    role::Role,
-    user::{
-        User,
-        event::{CreateUser, DeleteUser, UpdateUserPassword, UpdateUserRole},
-    },
-};
+use kernel::model::{id::UserId, role::Role, user::User};
 
 use crate::{
     extractor::AuthorizedUser,
@@ -34,7 +27,7 @@ pub async fn list_user(
     user: AuthorizedUser,
     State(registry): State<AppRegistry>,
 ) -> AppResult<Json<UsersResponse>> {
-    if !user.id_admin() {
+    if !user.is_admin() {
         return Err(AppError::UnauthorizedError);
     }
 
@@ -59,7 +52,7 @@ pub async fn change_role(
     Path(user_id): Path<UserId>,
     Json(req): Json<UpdateUserRoleRequest>,
 ) -> AppResult<StatusCode> {
-    if !user.id_admin() {
+    if !user.is_admin() {
         return Err(AppError::UnauthorizedError);
     }
 
