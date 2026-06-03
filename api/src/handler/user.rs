@@ -3,6 +3,7 @@ use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
 };
+use hyper::StatusCode;
 use registry::AppRegistry;
 
 use kernel::model::{
@@ -56,8 +57,19 @@ pub async fn change_role() {
     todo!()
 }
 
-pub async fn change_password() {
-    todo!()
+pub async fn change_password(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+    Json(req): Json<UpdateUserPasswordRequest>,
+) -> AppResult<StatusCode> {
+    let event = UpdateUserPasswordRequestWithUserId::new(user.user.id, req);
+
+    registry
+        .user_repository()
+        .update_password(UpdateUserPassword::from(event))
+        .await?;
+
+    Ok(StatusCode::OK)
 }
 
 pub async fn delete_user() {
