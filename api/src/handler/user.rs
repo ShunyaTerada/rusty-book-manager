@@ -62,13 +62,12 @@ pub async fn change_password(
     State(registry): State<AppRegistry>,
     Json(req): Json<UpdateUserPasswordRequest>,
 ) -> AppResult<StatusCode> {
-    let event = UpdateUserPasswordRequestWithUserId::new(user.user.id, req);
+    let event = UpdateUserPasswordRequestWithUserId::new(user.id(), req);
 
     registry
         .user_repository()
-        .update_password(UpdateUserPassword::from(event))
+        .update_password(event.into())
         .await?;
-
     Ok(StatusCode::OK)
 }
 
