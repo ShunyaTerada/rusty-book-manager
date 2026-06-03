@@ -53,8 +53,21 @@ pub async fn register_user() {
     todo!()
 }
 
-pub async fn change_role() {
-    todo!()
+pub async fn change_role(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+    Path(user_id): Path<UserId>,
+    Json(req): Json<UpdateUserRoleRequest>,
+) -> AppResult<StatusCode> {
+    if !user.id_admin() {
+        return Err(AppError::UnauthorizedError);
+    }
+
+    let event = UpdateUserRoleRequestWithUserId::new(user_id, req);
+
+    registry.user_repository().update_role(event.into()).await?;
+
+    Ok(StatusCode::OK)
 }
 
 pub async fn change_password(
@@ -68,6 +81,7 @@ pub async fn change_password(
         .user_repository()
         .update_password(event.into())
         .await?;
+
     Ok(StatusCode::OK)
 }
 
