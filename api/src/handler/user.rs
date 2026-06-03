@@ -31,9 +31,9 @@ pub async fn get_current_user(user: AuthorizedUser) -> AppResult<Json<UserRespon
 
 pub async fn list_user(
     _user: AuthorizedUser,
-    State(repository): State<AppRegistry>,
+    State(registry): State<AppRegistry>,
 ) -> AppResult<Json<UsersResponse>> {
-    let item: Vec<UserResponse> = repository
+    let item: Vec<UserResponse> = registry
         .user_repository()
         .find_all()
         .await?
