@@ -9,7 +9,10 @@ use registry::AppRegistry;
 use kernel::model::{
     id::UserId,
     role::Role,
-    user::{User, event::CreateUser},
+    user::{
+        User,
+        event::{CreateUser, DeleteUser},
+    },
 };
 
 use crate::{
@@ -50,14 +53,14 @@ pub async fn register_user(
     user: AuthorizedUser,
     State(registry): State<AppRegistry>,
     Json(req): Json<CreateUserRequest>,
-) -> AppResult<UserResponse> {
+) -> AppResult<Json<UserResponse>> {
     if !user.is_admin() {
         return Err(AppError::ForbiddenOperation);
     }
 
     let user = registry.user_repository().create(req.into()).await?;
 
-    Ok(user.into())
+    Ok(Json(user.into()))
 }
 
 pub async fn change_role(
@@ -92,6 +95,17 @@ pub async fn change_password(
     Ok(StatusCode::OK)
 }
 
-pub async fn delete_user() {
-    todo!()
+pub async fn delete_user(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+    Path(user_id): Path<UserId>,
+    Json(req): Json<DeleteUser>,
+) -> AppResult<StatusCode> {
+    if !user.is_admin() {
+        return Err(AppError::ForbiddenOperation);
+    }
+
+    registry.user_repository().delete(req).await?;
+
+    Ok(StatusCode::OK)
 }
