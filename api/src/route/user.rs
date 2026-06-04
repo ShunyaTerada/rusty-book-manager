@@ -15,7 +15,7 @@ pub fn build_user_repository() -> Router<AppRegistry> {
         .route("/me/password", put(change_password))
         .route("/", get(list_user).post(register_user))
         .route("/{user_id}", delete(delete_user))
-        .route("/{user_id}", put(change_role));
+        .route("/{user_id}/role", put(change_role));
 
     Router::new().nest("/users", users_routers)
 }
