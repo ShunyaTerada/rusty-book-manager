@@ -3,6 +3,7 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
+use garde::Validate;
 use registry::AppRegistry;
 
 use kernel::model::{id::UserId, user::event::DeleteUser};
@@ -49,6 +50,8 @@ pub async fn register_user(
         return Err(AppError::ForbiddenOperation);
     }
 
+    req.validate(&())?;
+
     let new_user = registry.user_repository().create(req.into()).await?;
 
     Ok(Json(new_user.into()))
@@ -76,6 +79,8 @@ pub async fn change_password(
     State(registry): State<AppRegistry>,
     Json(req): Json<UpdateUserPasswordRequest>,
 ) -> AppResult<StatusCode> {
+    req.validate(&())?;
+
     let event = UpdateUserPasswordRequestWithUserId::new(user.id(), req);
 
     registry
