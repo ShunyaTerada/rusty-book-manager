@@ -4,7 +4,7 @@ use registry::AppRegistry;
 
 use crate::handler::auth::{login, logout};
 
-pub fn build_auth_router() -> Router<AppRegistry> {
+pub fn routes() -> Router<AppRegistry> {
     let auth_router = Router::new()
         .route("/login", post(login))
         .route("/logout", post(logout));
