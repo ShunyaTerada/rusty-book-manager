@@ -58,9 +58,9 @@ pub async fn register_user(
         return Err(AppError::ForbiddenOperation);
     }
 
-    let user = registry.user_repository().create(req.into()).await?;
+    let new_user = registry.user_repository().create(req.into()).await?;
 
-    Ok(Json(user.into()))
+    Ok(Json(new_user.into()))
 }
 
 pub async fn change_role(
@@ -99,13 +99,15 @@ pub async fn delete_user(
     user: AuthorizedUser,
     State(registry): State<AppRegistry>,
     Path(user_id): Path<UserId>,
-    Json(req): Json<DeleteUser>,
 ) -> AppResult<StatusCode> {
     if !user.is_admin() {
         return Err(AppError::ForbiddenOperation);
     }
 
-    registry.user_repository().delete(req).await?;
+    registry
+        .user_repository()
+        .delete(DeleteUser { user_id })
+        .await?;
 
     Ok(StatusCode::OK)
 }
