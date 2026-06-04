@@ -6,7 +6,11 @@ use axum::{
 use hyper::StatusCode;
 use registry::AppRegistry;
 
-use kernel::model::{id::UserId, role::Role, user::User};
+use kernel::model::{
+    id::UserId,
+    role::Role,
+    user::{User, event::CreateUser},
+};
 
 use crate::{
     extractor::AuthorizedUser,
@@ -28,7 +32,7 @@ pub async fn list_user(
     State(registry): State<AppRegistry>,
 ) -> AppResult<Json<UsersResponse>> {
     if !user.is_admin() {
-        return Err(AppError::UnauthorizedError);
+        return Err(AppError::ForbiddenOperation);
     }
 
     let item: Vec<UserResponse> = registry
@@ -42,8 +46,18 @@ pub async fn list_user(
     Ok(Json(UsersResponse { item }))
 }
 
-pub async fn register_user() {
-    todo!()
+pub async fn register_user(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+    Json(req): Json<CreateUserRequest>,
+) -> AppResult<UserResponse> {
+    if !user.is_admin() {
+        return Err(AppError::ForbiddenOperation);
+    }
+
+    let user = registry.user_repository().create(req.into()).await?;
+
+    Ok(user.into())
 }
 
 pub async fn change_role(
@@ -53,7 +67,7 @@ pub async fn change_role(
     Json(req): Json<UpdateUserRoleRequest>,
 ) -> AppResult<StatusCode> {
     if !user.is_admin() {
-        return Err(AppError::UnauthorizedError);
+        return Err(AppError::ForbiddenOperation);
     }
 
     let event = UpdateUserRoleRequestWithUserId::new(user_id, req);
