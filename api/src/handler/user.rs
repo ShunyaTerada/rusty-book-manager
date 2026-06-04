@@ -1,26 +1,17 @@
 use axum::{
     Json,
-    extract::{Path, Query, State},
+    extract::{Path, State},
     http::StatusCode,
 };
-use hyper::StatusCode;
 use registry::AppRegistry;
 
-use kernel::model::{
-    id::UserId,
-    role::Role,
-    user::{
-        User,
-        event::{CreateUser, DeleteUser},
-    },
-};
+use kernel::model::{id::UserId, user::event::DeleteUser};
 
 use crate::{
     extractor::AuthorizedUser,
     model::user::{
-        CreateUserRequest, RoleName, UpdateUserPasswordRequest,
-        UpdateUserPasswordRequestWithUserId, UpdateUserRoleRequest,
-        UpdateUserRoleRequestWithUserId, UserResponse, UsersResponse,
+        CreateUserRequest, UpdateUserPasswordRequest, UpdateUserPasswordRequestWithUserId,
+        UpdateUserRoleRequest, UpdateUserRoleRequestWithUserId, UserResponse, UsersResponse,
     },
 };
 
