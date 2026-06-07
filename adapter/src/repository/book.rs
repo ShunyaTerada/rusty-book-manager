@@ -76,7 +76,34 @@ impl BookRepository for BookRepositoryImpl {
     }
 
     async fn update(&self, event: UpdateBook) -> AppResult<()> {
-        todo!()
+        let res = sqlx::query!(
+            r#"
+                UPDATE books
+                SET
+                    title = $1,
+                    author = $2,
+                    isbn = $3,
+                    description = $4
+                WHERE book_id = $5 AND user_id = $6
+            "#,
+            event.title,
+            event.author,
+            event.isbn,
+            event.description,
+            event.book_id as _,
+            event.requested_user as _,
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        if res.rows_affected() < 1 {
+            return Err(AppError::EntityNotFound(
+                "該当する書籍が見つかりません".to_string(),
+            ));
+        }
+
+        Ok(())
     }
 
     async fn delete(&self, event: DeleteBook) -> AppResult<()> {
