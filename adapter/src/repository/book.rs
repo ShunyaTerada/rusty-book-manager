@@ -4,11 +4,12 @@ use kernel::model::book::BookListOptions;
 use kernel::model::book::event::{DeleteBook, UpdateBook};
 use kernel::model::book::{Book, event::CreateBook};
 use kernel::model::id::{BookId, UserId};
+use kernel::model::list::PaginatedList;
 use kernel::repository::book::BookRepository;
 use shared::error::{AppError, AppResult};
 
 use crate::database::ConnectionPool;
-use crate::database::model::book::BookRow;
+use crate::database::model::book::{BookRow, PaginatedBookRow};
 
 #[derive(new)]
 pub struct BookRepositoryImpl {
@@ -36,21 +37,63 @@ impl BookRepository for BookRepositoryImpl {
         Ok(())
     }
 
-    async fn find_all(&self, option: BookListOptions) -> AppResult<PagenatedList<Book>> {
+    async fn find_all(&self, option: BookListOptions) -> AppResult<PaginatedList<Book>> {
         let BookListOptions { offset, limit } = option;
-        let rows: Vec<BookRow> = sqlx::query_as!(
-            BookRow,
+        let paginated_book_rows: Vec<PaginatedBookRow> = sqlx::query_as!(
+            PaginatedBookRow,
             r#"
-                SELECT book_id, title, author, isbn, description
+                SELECT COUNT(*) OVER() AS "total!", book_id AS id
                 FROM books
                 ORDER BY created_at DESC
-            "#
+                LIMIT $1 OFFSET $2
+            "#,
+            limit,
+            offset
         )
         .fetch_all(self.db.inner_ref())
         .await
         .map_err(AppError::SpecificOperationError)?;
 
-        Ok(rows.into_iter().map(Book::from).collect())
+        let total = paginated_book_rows
+            .first()
+            .map(|r| r.total)
+            .unwrap_or_default();
+
+        let book_ids = paginated_book_rows
+            .into_iter()
+            .map(|r| r.id)
+            .collect::<Vec<BookId>>();
+
+        let rows: Vec<BookRow> = sqlx::query_as!(
+            BookRow,
+            r#"
+                SELECT 
+                b.book_id, 
+                b.title, 
+                b.author, 
+                b.isbn, 
+                b.description,
+                u.user_id AS owned_by,
+                u.name AS owner_name
+                FROM books AS b
+                INNER JOIN users AS u USING(user_id)
+                WHERE b.book_id = ANY($1)
+                ORDER BY b.created_at DESC
+            "#,
+            &book_ids as _
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        let book_rows = rows.into_iter().map(Book::from).collect();
+
+        Ok(PaginatedList {
+            total,
+            offset,
+            limit,
+            item: book_rows,
+        })
     }
 
     async fn find_by_id(&self, book_id: BookId) -> AppResult<Option<Book>> {
