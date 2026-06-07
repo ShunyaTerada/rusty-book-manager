@@ -53,18 +53,21 @@ impl BookRepository for BookRepositoryImpl {
         Ok(rows.into_iter().map(Book::from).collect())
     }
 
-    async fn find_by_id(&self, book_id: BookId, user_id: UserId) -> AppResult<Option<Book>> {
+    async fn find_by_id(&self, book_id: BookId) -> AppResult<Option<Book>> {
         let rows: Option<BookRow> = sqlx::query_as!(
             BookRow,
             r#"
             SELECT
-                book_id,
-                title,
-                author,
-                isbn,
-                description
-            FROM books
-            WHERE book_id = $1
+                b.book_id AS book_id,
+                b.title AS title,
+                b.author AS author,
+                b.isbn AS isbn,
+                b.description AS description,
+                u.user_id AS owned_by,
+                u.name AS owner_name
+            FROM books AS b
+            INNER JOIN users AS u USING(user_id)
+            WHERE b.book_id = $1
         "#,
             book_id as _
         )
