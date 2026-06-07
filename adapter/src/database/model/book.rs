@@ -39,7 +39,7 @@ impl From<BookRow> for Book {
     }
 }
 
-struct PaginatedBookRow {
-    total: i64,
-    ids: Vec<BookId>,
+pub struct PaginatedBookRow {
+    pub total: i64,
+    pub id: BookId,
 }
