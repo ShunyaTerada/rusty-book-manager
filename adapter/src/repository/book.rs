@@ -54,7 +54,7 @@ impl BookRepository for BookRepositoryImpl {
     }
 
     async fn find_by_id(&self, book_id: BookId) -> AppResult<Option<Book>> {
-        let rows: Option<BookRow> = sqlx::query_as!(
+        let row: Option<BookRow> = sqlx::query_as!(
             BookRow,
             r#"
             SELECT
@@ -75,7 +75,7 @@ impl BookRepository for BookRepositoryImpl {
         .await
         .map_err(AppError::SpecificOperationError)?;
 
-        Ok(rows.map(Book::from))
+        Ok(row.map(Book::from))
     }
 
     async fn update(&self, event: UpdateBook) -> AppResult<()> {
