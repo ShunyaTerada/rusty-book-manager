@@ -85,7 +85,7 @@ impl BookRepository for BookRepositoryImpl {
             requested_user,
         } = event;
 
-        let row = sqlx::query!(
+        let res = sqlx::query!(
             r#"
                 DELETE FROM books
                 WHERE book_id = $1 AND user_id = $2
@@ -97,7 +97,7 @@ impl BookRepository for BookRepositoryImpl {
         .await
         .map_err(AppError::SpecificOperationError)?;
 
-        if row.rows_affected() < 1 {
+        if res.rows_affected() < 1 {
             return Err(AppError::EntityNotFound(
                 "該当する書籍が見つかりません".to_string(),
             ));
