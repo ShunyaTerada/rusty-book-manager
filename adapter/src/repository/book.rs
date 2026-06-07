@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use derive_new::new;
+use kernel::model::book::BookListOptions;
 use kernel::model::book::{Book, event::CreateBook};
-use kernel::model::id::BookId;
+use kernel::model::id::{BookId, UserId};
 use kernel::repository::book::BookRepository;
 use shared::error::{AppError, AppResult};
 
@@ -15,16 +16,17 @@ pub struct BookRepositoryImpl {
 
 #[async_trait]
 impl BookRepository for BookRepositoryImpl {
-    async fn create(&self, event: CreateBook) -> AppResult<()> {
+    async fn create(&self, event: CreateBook, user_id: UserId) -> AppResult<()> {
         sqlx::query!(
             r#"
-                INSERT INTO books (title, author, isbn, description)
-                VALUES($1, $2, $3, $4)
+                INSERT INTO books (title, author, isbn, description, user_id)
+                VALUES($1, $2, $3, $4, $5)
             "#,
             event.title,
             event.author,
             event.isbn,
-            event.description
+            event.description,
+            user_id as _,
         )
         .execute(self.db.inner_ref())
         .await
@@ -33,7 +35,8 @@ impl BookRepository for BookRepositoryImpl {
         Ok(())
     }
 
-    async fn find_all(&self) -> AppResult<Vec<Book>> {
+    async fn find_all(&self, option: BookListOptions) -> AppResult<PagenatedList<Book>> {
+        let BookListOptions { offset, limit } = option;
         let rows: Vec<BookRow> = sqlx::query_as!(
             BookRow,
             r#"
@@ -49,7 +52,7 @@ impl BookRepository for BookRepositoryImpl {
         Ok(rows.into_iter().map(Book::from).collect())
     }
 
-    async fn find_by_id(&self, book_id: BookId) -> AppResult<Option<Book>> {
+    async fn find_by_id(&self, book_id: BookId, user_id: UserId) -> AppResult<Option<Book>> {
         let rows: Option<BookRow> = sqlx::query_as!(
             BookRow,
             r#"
