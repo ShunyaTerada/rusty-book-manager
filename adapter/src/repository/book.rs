@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use derive_new::new;
 use kernel::model::book::BookListOptions;
+use kernel::model::book::event::{DeleteBook, UpdateBook};
 use kernel::model::book::{Book, event::CreateBook};
 use kernel::model::id::{BookId, UserId};
 use kernel::repository::book::BookRepository;
@@ -72,6 +73,37 @@ impl BookRepository for BookRepositoryImpl {
         .map_err(AppError::SpecificOperationError)?;
 
         Ok(rows.map(Book::from))
+    }
+
+    async fn update(&self, event: UpdateBook) -> AppResult<()> {
+        todo!()
+    }
+
+    async fn delete(&self, event: DeleteBook) -> AppResult<()> {
+        let DeleteBook {
+            book_id,
+            requested_user,
+        } = event;
+
+        let row = sqlx::query!(
+            r#"
+                DELETE FROM books
+                WHERE book_id = $1 AND user_id = $2
+            "#,
+            book_id as _,
+            requested_user as _,
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        if row.rows_affected() < 1 {
+            return Err(AppError::EntityNotFound(
+                "該当する書籍が見つかりません".to_string(),
+            ));
+        }
+
+        Ok(())
     }
 }
 
