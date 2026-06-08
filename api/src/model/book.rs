@@ -42,7 +42,7 @@ impl From<CreateBookRequest> for CreateBook {
     }
 }
 
-#[derive(Debug, Serialize, Validate)]
+#[derive(Debug, Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateBookRequest {
     #[garde(length(min = 1))]
