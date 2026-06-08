@@ -33,7 +33,6 @@ impl BookRepository for BookRepositoryImpl {
         .execute(self.db.inner_ref())
         .await
         .map_err(AppError::SpecificOperationError)?;
-
         Ok(())
     }
 
@@ -92,7 +91,7 @@ impl BookRepository for BookRepositoryImpl {
             total,
             offset,
             limit,
-            item: book_rows,
+            items: book_rows,
         })
     }
 
@@ -183,12 +182,30 @@ impl BookRepository for BookRepositoryImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::repository::user::UserRepositoryImpl;
+    use kernel::{model::user::event::CreateUser, repository::user::UserRepository};
 
     #[sqlx::test]
-    #[ignore = "booksテーブルにuser_idを追加したことをアプリケーション側に反映するまで保留"]
-    async fn test_register_book(pool: sqlx::PgPool) -> AppResult<()> {
+    async fn test_register_book(pool: sqlx::PgPool) -> anyhow::Result<()> {
+        sqlx::query!(
+            r#"
+                INSERT INTO roles(name) VALUES ('Admin'), ('User')
+            "#
+        )
+        .execute(&pool)
+        .await?;
+
+        let user_repo = UserRepositoryImpl::new(ConnectionPool::new(pool.clone()));
         //BookRepositryImplを初期化
         let repo = BookRepositoryImpl::new(ConnectionPool::new(pool));
+
+        let user = user_repo
+            .create(CreateUser {
+                name: "Test User".into(),
+                email: "test@example.com".into(),
+                password: "test_password".into(),
+            })
+            .await?;
 
         //投入するための蔵書データを作成
         let book = CreateBook {
@@ -199,15 +216,20 @@ mod tests {
         };
 
         //蔵書データを投入すると正常終了することを確認
-        repo.create(book).await?;
+        repo.create(book, user.id).await?;
+
+        let options = BookListOptions {
+            limit: 20,
+            offset: 0,
+        };
 
         //蔵書の一覧を取得すると投入した一件だけ取得することを確認
-        let res = repo.find_all().await?;
-        assert_eq!(res.len(), 1);
+        let res = repo.find_all(options).await?;
+        assert_eq!(res.items.len(), 1);
 
         //蔵書の一覧の最初のデータから蔵書IDを取得し、
         //find_by_idメソッドでその蔵書データを取得できることを確認
-        let book_id = res[0].id;
+        let book_id = res.items[0].id;
         let res = repo.find_by_id(book_id).await?;
         assert!(res.is_some());
 
@@ -219,12 +241,14 @@ mod tests {
             author,
             isbn,
             description,
+            owner,
         } = res.unwrap();
         assert_eq!(id, book_id);
         assert_eq!(title, "Test Title");
         assert_eq!(author, "Test Author");
         assert_eq!(isbn, "Test ISBN");
         assert_eq!(description, "Test Description");
+        assert_eq!(owner.name, "Test User");
 
         Ok(())
     }
