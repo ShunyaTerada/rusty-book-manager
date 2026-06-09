@@ -3,13 +3,14 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
-use kernel::model::id::BookId;
+use hyper::StatusCode;
+use kernel::model::{book::event::DeleteBook, id::BookId};
 use registry::AppRegistry;
 use shared::error::{AppError, AppResult};
 
 use crate::{
     extractor::AuthorizedUser,
-    model::book::{BookResponse, CreateBookRequest},
+    model::book::{BookResponse, CreateBookRequest, UpdateBookRequest, UpdateBookRequestWithIds},
 };
 
 pub async fn register_book(
@@ -49,4 +50,20 @@ pub async fn show_book(
                 "The specific book was not found".into(),
             )),
         })
+}
+
+pub async fn delete_book(
+    user: AuthorizedUser,
+    Path(book_id): Path<BookId>,
+    State(registry): State<AppRegistry>,
+) -> AppResult<StatusCode> {
+    let event = DeleteBook {
+        book_id,
+        requested_user: user.id(),
+    };
+    registry
+        .book_repository()
+        .delete(event)
+        .await
+        .map(|_| StatusCode::OK)
 }
