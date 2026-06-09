@@ -65,5 +65,5 @@ pub async fn delete_book(
         .book_repository()
         .delete(event)
         .await
-        .map(|_| StatusCode::OK)
+        .map(|_| StatusCode::NO_CONTENT)
 }
