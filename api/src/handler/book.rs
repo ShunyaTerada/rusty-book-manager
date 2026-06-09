@@ -7,15 +7,19 @@ use kernel::model::id::BookId;
 use registry::AppRegistry;
 use shared::error::{AppError, AppResult};
 
-use crate::model::book::{BookResponse, CreateBookRequest};
+use crate::{
+    extractor::AuthorizedUser,
+    model::book::{BookResponse, CreateBookRequest},
+};
 
 pub async fn register_book(
+    user: AuthorizedUser,
     State(registry): State<AppRegistry>,
     Json(req): Json<CreateBookRequest>,
 ) -> AppResult<StatusCode> {
     registry
         .book_repository()
-        .create(req.into())
+        .create(req.into(), user.id())
         .await
         .map(|_| StatusCode::CREATED)
 }
