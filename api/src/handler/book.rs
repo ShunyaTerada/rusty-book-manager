@@ -3,8 +3,12 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
+use garde::Validate;
 use hyper::StatusCode;
-use kernel::model::{book::event::DeleteBook, id::BookId};
+use kernel::model::{
+    book::event::{DeleteBook, UpdateBook},
+    id::BookId,
+};
 use registry::AppRegistry;
 use shared::error::{AppError, AppResult};
 
@@ -50,6 +54,25 @@ pub async fn show_book(
                 "The specific book was not found".into(),
             )),
         })
+}
+
+pub async fn update_book(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+    Path(book_id): Path<BookId>,
+    Json(req): Json<UpdateBookRequest>,
+) -> AppResult<StatusCode> {
+    req.validate(&())?;
+
+    let book_req = UpdateBookRequestWithIds::new(book_id, user.id(), req);
+
+    let event: UpdateBook = book_req.into();
+
+    registry
+        .book_repository()
+        .update(event)
+        .await
+        .map(|_| StatusCode::OK)
 }
 
 pub async fn delete_book(
