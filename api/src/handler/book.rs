@@ -1,11 +1,14 @@
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
 };
 use garde::Validate;
 use kernel::model::{
-    book::event::{DeleteBook, UpdateBook},
+    book::{
+        BookListOptions,
+        event::{DeleteBook, UpdateBook},
+    },
     id::BookId,
 };
 use registry::AppRegistry;
@@ -13,7 +16,10 @@ use shared::error::{AppError, AppResult};
 
 use crate::{
     extractor::AuthorizedUser,
-    model::book::{BookResponse, CreateBookRequest, UpdateBookRequest, UpdateBookRequestWithIds},
+    model::book::{
+        BookListQuery, BookResponse, CreateBookRequest, PaginatedBookResponse, UpdateBookRequest,
+        UpdateBookRequestWithIds,
+    },
 };
 
 pub async fn register_book(
@@ -30,12 +36,16 @@ pub async fn register_book(
 
 pub async fn show_book_list(
     State(registry): State<AppRegistry>,
-) -> AppResult<Json<Vec<BookResponse>>> {
+    Query(list): Query<BookListQuery>,
+) -> AppResult<Json<PaginatedBookResponse>> {
+    list.validate(&())?;
+    let options: BookListOptions = list.into();
+
     registry
         .book_repository()
-        .find_all()
+        .find_all(options)
         .await
-        .map(|v| v.into_iter().map(BookResponse::from).collect::<Vec<_>>())
+        .map(|v| v.into())
         .map(Json)
 }
 
