@@ -4,7 +4,6 @@ use axum::{
     http::StatusCode,
 };
 use garde::Validate;
-use hyper::StatusCode;
 use kernel::model::{
     book::event::{DeleteBook, UpdateBook},
     id::BookId,
