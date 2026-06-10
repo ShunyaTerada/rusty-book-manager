@@ -45,8 +45,7 @@ pub async fn show_book_list(
         .book_repository()
         .find_all(options)
         .await
-        .map(|v| v.into())
-        .map(Json)
+        .map(|v| Json(v.into()))
 }
 
 pub async fn show_book(
