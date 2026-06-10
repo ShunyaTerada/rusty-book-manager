@@ -35,6 +35,7 @@ pub async fn register_book(
 }
 
 pub async fn show_book_list(
+    _user: AuthorizedUser,
     State(registry): State<AppRegistry>,
     Query(list): Query<BookListQuery>,
 ) -> AppResult<Json<PaginatedBookResponse>> {
@@ -49,6 +50,7 @@ pub async fn show_book_list(
 }
 
 pub async fn show_book(
+    _user: AuthorizedUser,
     Path(book_id): Path<BookId>,
     State(registry): State<AppRegistry>,
 ) -> AppResult<Json<BookResponse>> {
