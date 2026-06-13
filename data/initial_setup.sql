@@ -1,12 +1,12 @@
 INSERT INTO
-    roles (name)
+    roles(name)
 VALUES
     ('Admin'),
     ('User')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO
-    users (name, email, password_hash, role_id)
+    users(name, email, password_hash, role_id)
 SELECT
     'Terada Shunya',
     'TeradaShunya@example.com',
