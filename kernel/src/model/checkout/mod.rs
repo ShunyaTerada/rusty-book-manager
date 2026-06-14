@@ -7,8 +7,8 @@ pub mod event;
 #[derive(Debug)]
 pub struct Checkout {
     pub id: CheckoutId,
-    pub checked_out_by: DateTime<Utc>,
-    pub checked_out_at: UserId,
+    pub checked_out_by: UserId,
+    pub checked_out_at: DateTime<Utc>,
     pub returned_at: Option<DateTime<Utc>>,
     pub book: CheckoutBook,
 }
