@@ -4,6 +4,7 @@ use crate::model::id::{BookId, CheckoutId, UserId};
 
 pub mod event;
 
+#[derive(Debug)]
 pub struct Checkout {
     pub id: CheckoutId,
     pub checked_out_by: DateTime<Utc>,
@@ -12,6 +13,7 @@ pub struct Checkout {
     pub book: CheckoutBook,
 }
 
+#[derive(Debug)]
 pub struct CheckoutBook {
     pub book_id: BookId,
     pub title: String,
