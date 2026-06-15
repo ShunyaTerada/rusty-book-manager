@@ -35,6 +35,7 @@ impl CheckoutRepository for CheckoutRepositoryImpl {
                     b.isbn
                 FROM checkouts AS c
                 JOIN books AS b USING(book_id)
+                ORDER BY c.checked_out_at DESC
             "#
         )
         .fetch_all(self.db.inner_ref())
