@@ -70,7 +70,7 @@ impl CheckoutRepository for CheckoutRepositoryImpl {
         Ok(rows.into_iter().map(Checkout::from).collect())
     }
     async fn find_history_by_book_id(&self, book_id: BookId) -> AppResult<Vec<Checkout>> {
-        let returned_rows: Vec<Checkout> = sqlx::query_as!(
+        let mut returned_rows: Vec<Checkout> = sqlx::query_as!(
             ReturnedCheckoutRow,
             r#"
                 SELECT
@@ -96,9 +96,13 @@ impl CheckoutRepository for CheckoutRepositoryImpl {
         .map(Checkout::from)
         .collect();
 
-        let rows = self.find_unreturned_by_book_id(book_id).await?.unwrap();
+        let rows = self.find_unreturned_by_book_id(book_id).await?;
 
-        Ok(returned_rows.insert(0, rows))
+        if let Some(v) = rows {
+            returned_rows.insert(0, v);
+        }
+
+        Ok(returned_rows)
     }
 }
 
