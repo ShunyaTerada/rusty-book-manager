@@ -70,7 +70,7 @@ impl CheckoutRepository for CheckoutRepositoryImpl {
         Ok(rows.into_iter().map(Checkout::from).collect())
     }
     async fn find_history_by_book_id(&self, book_id: BookId) -> AppResult<Vec<Checkout>> {
-        let rows = sqlx::query_as!(
+        let returned_rows: Vec<Checkout> = sqlx::query_as!(
             ReturnedCheckoutRow,
             r#"
                 SELECT
@@ -84,15 +84,48 @@ impl CheckoutRepository for CheckoutRepositoryImpl {
                     b.isbn
                 FROM returned_checkouts AS c
                 JOIN books AS b USING(book_id)
-                WHERE c.user_id = $1
+                WHERE c.book_id = $1
                 ORDER BY c.checked_out_at ASC
             "#,
             book_id as _
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(AppError::SpecificOperationError)?;
+        .map_err(AppError::SpecificOperationError)?
+        .into_iter()
+        .map(Checkout::from)
+        .collect();
 
-        Ok(rows.into_iter().map(Checkout::from).collect())
+        let rows = self.find_unreturned_by_book_id(book_id).await?.unwrap();
+
+        Ok(returned_rows.insert(0, rows))
+    }
+}
+
+impl CheckoutRepositoryImpl {
+    async fn find_unreturned_by_book_id(&self, book_id: BookId) -> AppResult<Option<Checkout>> {
+        let row = sqlx::query_as!(
+            CheckoutRow,
+            r#"
+                SELECT
+                    c.checkout_id, 
+                    c.book_id,
+                    c.user_id, 
+                    c.checked_out_at, 
+                    b.title,
+                    b.author,
+                    b.isbn
+                FROM checkouts AS c
+                JOIN books AS b USING(book_id)
+                WHERE c.book_id = $1
+            "#,
+            book_id as _
+        )
+        .fetch_optional(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?
+        .map(Checkout::from);
+
+        Ok(row)
     }
 }
