@@ -35,7 +35,7 @@ impl CheckoutRepository for CheckoutRepositoryImpl {
                     b.isbn
                 FROM checkouts AS c
                 JOIN books AS b USING(book_id)
-                ORDER BY c.checked_out_at DESC
+                ORDER BY c.checked_out_at 
             "#
         )
         .fetch_all(self.db.inner_ref())
@@ -45,9 +45,54 @@ impl CheckoutRepository for CheckoutRepositoryImpl {
         Ok(rows.into_iter().map(Checkout::from).collect())
     }
     async fn find_unreturned_by_user_id(&self, user_id: UserId) -> AppResult<Vec<Checkout>> {
-        todo!()
+        let rows = sqlx::query_as!(
+            ReturnedCheckoutRow,
+            r#"
+                SELECT
+                    c.checkout_id, 
+                    c.book_id,
+                    c.user_id, 
+                    c.checked_out_at, 
+                    b.title,
+                    b.author,
+                    b.isbn
+                FROM checkouts AS c
+                JOIN books AS b USING(book_id)
+                WHERE c.user_id = $1
+                ORDER BY c.checked_out_at ASC
+            "#,
+            user_id as _
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        Ok(rows.into_iter().map(Checkout::from).collect())
     }
     async fn find_history_by_book_id(&self, book_id: BookId) -> AppResult<Vec<Checkout>> {
-        todo!()
+        let rows = sqlx::query_as!(
+            ReturnedCheckoutRow,
+            r#"
+                SELECT
+                    c.checkout_id, 
+                    c.book_id,
+                    c.user_id, 
+                    c.checked_out_at, 
+                    c.returned_at,
+                    b.title,
+                    b.author,
+                    b.isbn
+                FROM returned_checkouts AS c
+                JOIN books AS b USING(book_id)
+                WHERE c.user_id = $1
+                ORDER BY c.checked_out_at ASC
+            "#,
+            book_id as _
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        Ok(rows.into_iter().map(Checkout::from).collect())
     }
 }
