@@ -46,7 +46,7 @@ impl CheckoutRepository for CheckoutRepositoryImpl {
     }
     async fn find_unreturned_by_user_id(&self, user_id: UserId) -> AppResult<Vec<Checkout>> {
         let rows = sqlx::query_as!(
-            ReturnedCheckoutRow,
+            CheckoutRow,
             r#"
                 SELECT
                     c.checkout_id, 
